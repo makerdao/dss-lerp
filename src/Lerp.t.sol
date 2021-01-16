@@ -3,6 +3,7 @@ pragma solidity ^0.6.7;
 import "ds-test/test.sol";
 
 import "./Lerp.sol";
+import "./LerpFactory.sol";
 
 interface Hevm {
     function warp(uint256) external;
@@ -39,6 +40,7 @@ contract DssLerpTest is DSTest {
     Hevm hevm;
 
     TestContract target;
+    LerpFactory factory;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -50,9 +52,10 @@ contract DssLerpTest is DSTest {
         hevm = Hevm(address(CHEAT_CODE));
 
         target = new TestContract();
+        factory = new LerpFactory();
     }
 
-    function test_lerp_tin() public {
+    function test_lerp() public {
         Lerp lerp = new Lerp(address(target), "value", 1 * TOLL_ONE_PCT, 1 * TOLL_ONE_PCT / 10, 9 days);
         assertEq(lerp.what(), "value");
         assertEq(lerp.start(), 1 * TOLL_ONE_PCT);
@@ -86,8 +89,7 @@ contract DssLerpTest is DSTest {
         assertEq(target.wards(address(lerp)), 0);
     }
 
-    function test_lerp_max_values() public {
-        // Reduce to reasonable numbers
+    function test_lerp_max_values1() public {
         uint256 start = 10 ** 59;
         uint256 end = 10 ** 59 - 1;
         uint256 duration = 365 days;
@@ -98,7 +100,44 @@ contract DssLerpTest is DSTest {
         lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
-        assertEq(target.value(), end);
+        uint256 value = target.value();
+        uint256 low = end > start ? start : end;
+        uint256 high = end > start ? end : start;
+        assertTrue(value >= low && value <= high);
+    }
+
+    function test_lerp_max_values2() public {
+        uint256 start = 10 ** 59 - 15;
+        uint256 end = 10 ** 59;
+        uint256 duration = 365 days;
+        uint256 deltaTime = 365 days - 1;   // This will set t at it's max value just under 1 WAD
+
+        Lerp lerp = new Lerp(address(target), "value", start, end, duration);
+        target.rely(address(lerp));
+        lerp.init();
+        hevm.warp(now + deltaTime);
+        lerp.tick();
+        uint256 value = target.value();
+        uint256 low = end > start ? start : end;
+        uint256 high = end > start ? end : start;
+        assertTrue(value >= low && value <= high);
+    }
+
+    function test_lerp_short_duration() public {
+        uint256 start = 5;
+        uint256 end = 10 ** 59;
+        uint256 duration = 2;
+        uint256 deltaTime = 1;
+
+        Lerp lerp = new Lerp(address(target), "value", start, end, duration);
+        target.rely(address(lerp));
+        lerp.init();
+        hevm.warp(now + deltaTime);
+        lerp.tick();
+        uint256 value = target.value();
+        uint256 low = end > start ? start : end;
+        uint256 high = end > start ? end : start;
+        assertTrue(value >= low && value <= high);
     }
 
     function test_lerp_bounds_fuzz(uint256 start, uint256 end, uint256 duration, uint256 deltaTime) public {
@@ -122,6 +161,40 @@ contract DssLerpTest is DSTest {
         uint256 low = end > start ? start : end;
         uint256 high = end > start ? end : start;
         assertTrue(value >= low && value <= high);
+    }
+
+    function test_lerp_factory() public {
+        uint256 start = 10 ** 59;
+        uint256 end = 2;
+        uint256 duration = 40;
+        uint256 deltaTime = 3;
+
+        BaseLerp lerp = BaseLerp(factory.newLerp(address(target), "value", start, end, duration));
+        target.rely(address(lerp));
+        lerp.init();
+        hevm.warp(now + deltaTime);
+        lerp.tick();
+        uint256 value = target.value();
+        uint256 low = end > start ? start : end;
+        uint256 high = end > start ? end : start;
+        assertTrue(value > low && value < high);    // Remove equality to make sure its actually between values
+    }
+
+    function test_ilk_lerp_factory() public {
+        uint256 start = 10 ** 59;
+        uint256 end = 2;
+        uint256 duration = 40;
+        uint256 deltaTime = 3;
+
+        BaseLerp lerp = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", start, end, duration));
+        target.rely(address(lerp));
+        lerp.init();
+        hevm.warp(now + deltaTime);
+        lerp.tick();
+        uint256 value = target.ilkvalue();
+        uint256 low = end > start ? start : end;
+        uint256 high = end > start ? end : start;
+        assertTrue(value > low && value < high);    // Remove equality to make sure its actually between values
     }
 
 }
