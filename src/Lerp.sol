@@ -40,7 +40,6 @@ abstract contract BaseLerp {
         end = end_;
         duration = duration_;
         startTime = block.timestamp;
-        done = false;
     }
 
     function tick() external {
