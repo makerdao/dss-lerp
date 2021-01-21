@@ -1,4 +1,4 @@
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.11;
 
 import "ds-test/test.sol";
 
@@ -61,13 +61,11 @@ contract DssLerpTest is DSTest {
         assertEq(lerp.start(), 1 * TOLL_ONE_PCT);
         assertEq(lerp.end(), 1 * TOLL_ONE_PCT / 10);
         assertEq(lerp.duration(), 9 days);
-        assertTrue(lerp.started());
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), 0);
         assertEq(target.value(), 0);
         target.rely(address(lerp));
         lerp.tick();
-        assertTrue(lerp.started());
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(target.value(), 1 * TOLL_ONE_PCT);

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.7;
+pragma solidity ^0.6.11;
 
 interface DenyLike {
     function deny(address) external;
@@ -24,7 +24,6 @@ abstract contract BaseLerp {
     uint256 immutable public end;
     uint256 immutable public duration;
 
-    bool              public started;
     bool              public done;
     uint256           public startTime;
 
@@ -40,13 +39,11 @@ abstract contract BaseLerp {
         start = start_;
         end = end_;
         duration = duration_;
-        started = true;
         startTime = block.timestamp;
         done = false;
     }
 
     function tick() external {
-        require(started, "Lerp/not-started");
         require(!done, "Lerp/finished");
         if (block.timestamp < startTime + duration) {
             // All bounds are constrained in the constructor so no need for safe-math
