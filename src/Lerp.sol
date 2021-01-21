@@ -52,11 +52,15 @@ abstract contract BaseLerp {
             //   = end * t + start - start * t [Avoids overflow by moving the subtraction to the end]
             update(end * t / WAD + start - start * t / WAD);
         } else {
-            // Set the end value and de-auth yourself
+            // Set the end value and mark as done
             update(end);
-            DenyLike(target).deny(address(this));
             done = true;
         }
+    }
+
+    function wipe() external {
+        require(done, "Lerp/not-finished");
+        DenyLike(target).deny(address(this));
     }
 
     function update(uint256 value) virtual internal;

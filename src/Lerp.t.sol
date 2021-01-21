@@ -84,6 +84,7 @@ contract DssLerpTest is DSTest {
         lerp.tick();
         assertEq(target.value(), 1 * TOLL_ONE_PCT / 10);    // 0.1%
         assertTrue(lerp.done());
+        lerp.wipe();
         assertEq(target.wards(address(lerp)), 0);
     }
 
