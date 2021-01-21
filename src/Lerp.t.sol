@@ -36,7 +36,7 @@ contract TestContract {
 }
 
 contract DssLerpTest is DSTest {
-    
+
     Hevm hevm;
 
     TestContract target;
@@ -61,12 +61,12 @@ contract DssLerpTest is DSTest {
         assertEq(lerp.start(), 1 * TOLL_ONE_PCT);
         assertEq(lerp.end(), 1 * TOLL_ONE_PCT / 10);
         assertEq(lerp.duration(), 9 days);
-        assertTrue(!lerp.started());
+        assertTrue(lerp.started());
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), 0);
         assertEq(target.value(), 0);
         target.rely(address(lerp));
-        lerp.init();
+        lerp.tick();
         assertTrue(lerp.started());
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
@@ -97,7 +97,6 @@ contract DssLerpTest is DSTest {
 
         Lerp lerp = new Lerp(address(target), "value", start, end, duration);
         target.rely(address(lerp));
-        lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
         uint256 value = target.value();
@@ -114,7 +113,6 @@ contract DssLerpTest is DSTest {
 
         Lerp lerp = new Lerp(address(target), "value", start, end, duration);
         target.rely(address(lerp));
-        lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
         uint256 value = target.value();
@@ -131,7 +129,6 @@ contract DssLerpTest is DSTest {
 
         Lerp lerp = new Lerp(address(target), "value", start, end, duration);
         target.rely(address(lerp));
-        lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
         uint256 value = target.value();
@@ -154,7 +151,6 @@ contract DssLerpTest is DSTest {
 
         Lerp lerp = new Lerp(address(target), "value", start, end, duration);
         target.rely(address(lerp));
-        lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
         uint256 value = target.value();
@@ -171,7 +167,6 @@ contract DssLerpTest is DSTest {
 
         BaseLerp lerp = BaseLerp(factory.newLerp(address(target), "value", start, end, duration));
         target.rely(address(lerp));
-        lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
         uint256 value = target.value();
@@ -188,7 +183,6 @@ contract DssLerpTest is DSTest {
 
         BaseLerp lerp = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", start, end, duration));
         target.rely(address(lerp));
-        lerp.init();
         hevm.warp(now + deltaTime);
         lerp.tick();
         uint256 value = target.ilkvalue();
