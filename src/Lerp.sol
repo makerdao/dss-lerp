@@ -1,9 +1,5 @@
 pragma solidity ^0.6.7;
 
-interface DenyLike {
-    function deny(address) external;
-}
-
 interface FileLike {
     function file(bytes32, uint256) external;
 }
@@ -33,7 +29,7 @@ abstract contract BaseLerp {
     bool public started;
     bool public done;
     uint256 public startTime;
-    
+
     constructor(address target_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) public {
         require(duration_ != 0, "Lerp/no-zero-duration");
         require(duration_ <= 365 days, "Lerp/max-duration-one-year");
@@ -71,9 +67,9 @@ abstract contract BaseLerp {
             //   = end * t + start - start * t [Avoids overflow by moving the subtraction to the end]
             update(end * t / WAD + start - start * t / WAD);
         } else {
-            // Set the end value and de-auth yourself
+            // Set the end value and attempt to de-auth yourself
             update(end);
-            DenyLike(target).deny(address(this));
+            target.call(abi.encodeWithSignature("deny(address)", address(this)));
             done = true;
         }
     }

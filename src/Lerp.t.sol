@@ -35,8 +35,32 @@ contract TestContract {
 
 }
 
+contract TestContractMissingDeny {
+
+    // --- Auth ---
+    mapping (address => uint256) public wards;
+    function rely(address usr) external auth { wards[usr] = 1; }
+    modifier auth { require(wards[msg.sender] == 1); _; }
+
+    uint256 public value;
+    uint256 public ilkvalue;
+
+    constructor() public {
+        wards[msg.sender] = 1;
+    }
+
+    function file(bytes32 what, uint256 data) public auth {
+        value = data;
+    }
+
+    function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
+        ilkvalue = data;
+    }
+
+}
+
 contract DssLerpTest is DSTest {
-    
+
     Hevm hevm;
 
     TestContract target;
@@ -87,6 +111,19 @@ contract DssLerpTest is DSTest {
         assertEq(target.value(), 1 * TOLL_ONE_PCT / 10);    // 0.1%
         assertTrue(lerp.done());
         assertEq(target.wards(address(lerp)), 0);
+    }
+
+    // Test that lerp can complete if deny is missing or malformed
+    function test_lerp_missing_deny() public {
+        TestContractMissingDeny no_deny_target = new TestContractMissingDeny();
+        Lerp lerp = new Lerp(address(no_deny_target), "value", 1 * TOLL_ONE_PCT, 1 * TOLL_ONE_PCT / 10, 9 days);
+        no_deny_target.rely(address(lerp));
+        lerp.init();
+        hevm.warp(12 days);
+        assertEq(no_deny_target.wards(address(lerp)), 1);
+        lerp.tick();
+        assertTrue(lerp.done());
+        assertEq(no_deny_target.wards(address(lerp)), 1);
     }
 
     function test_lerp_max_values1() public {
