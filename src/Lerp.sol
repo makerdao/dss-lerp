@@ -42,7 +42,7 @@ abstract contract BaseLerp {
         startTime = block.timestamp;
     }
 
-    function tick() external {
+    function tick() external returns (uint256 result) {
         require(!done, "Lerp/finished");
         if (block.timestamp < startTime + duration) {
             // All bounds are constrained in the constructor so no need for safe-math
@@ -50,10 +50,10 @@ abstract contract BaseLerp {
             uint256 t = (block.timestamp - startTime) * WAD / duration;
             // y = (end - start) * t + start [Linear Interpolation]
             //   = end * t + start - start * t [Avoids overflow by moving the subtraction to the end]
-            update(end * t / WAD + start - start * t / WAD);
+            update(result = end * t / WAD + start - start * t / WAD);
         } else {
             // Set the end value and mark as done
-            update(end);
+            update(result = end);
             done = true;
         }
     }
