@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity ^0.6.11;
+pragma solidity ^0.6.12;
 
 interface DenyLike {
     function deny(address) external;
@@ -61,6 +61,7 @@ abstract contract BaseLerp {
 
     function tick() external returns (uint256 result) {
         require(!done, "Lerp/finished");
+        require(block.timestamp >= startTime, "Lerp/bad-timestamp");
         if (block.timestamp < startTime + duration) {
             // All bounds are constrained in the constructor so no need for safe-math
             // 0 <= t < WAD
