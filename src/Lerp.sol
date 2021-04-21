@@ -47,16 +47,17 @@ abstract contract BaseLerp {
     constructor(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) public {
         require(duration_ != 0, "Lerp/no-zero-duration");
         require(duration_ <= 365 days, "Lerp/max-duration-one-year");
+        require(startTime_ <= block.timestamp + 365 days, "Lerp/start-within-one-year");
         // This is not the exact upper bound, but it's a practical one
         // Ballparked from 2^256 / 10^18 and verified that this is less than that value
         require(start_ <= 10 ** 59, "Lerp/start-too-large");
         require(end_ <= 10 ** 59, "Lerp/end-too-large");
         target = target_;
         what = what_;
+        startTime = startTime_;
         start = start_;
         end = end_;
         duration = duration_;
-        startTime = startTime_;
     }
 
     function tick() external returns (uint256 result) {
@@ -112,4 +113,5 @@ contract IlkLerp is BaseLerp {
     function update(uint256 value) override internal {
         FileIlkLike(target).file(ilk, what, value);
     }
+
 }
