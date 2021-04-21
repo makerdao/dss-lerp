@@ -56,7 +56,7 @@ contract DssLerpTest is DSTest {
     }
 
     function test_lerp() public {
-        Lerp lerp = new Lerp(address(target), "value", 1 * TOLL_ONE_PCT, 1 * TOLL_ONE_PCT / 10, 9 days);
+        Lerp lerp = new Lerp(address(target), "value", block.timestamp, 1 * TOLL_ONE_PCT, 1 * TOLL_ONE_PCT / 10, 9 days);
         assertEq(lerp.what(), "value");
         assertEq(lerp.start(), 1 * TOLL_ONE_PCT);
         assertEq(lerp.end(), 1 * TOLL_ONE_PCT / 10);
@@ -94,7 +94,7 @@ contract DssLerpTest is DSTest {
         uint256 duration = 365 days;
         uint256 deltaTime = 365 days - 1;   // This will set t at it's max value just under 1 WAD
 
-        Lerp lerp = new Lerp(address(target), "value", start, end, duration);
+        Lerp lerp = new Lerp(address(target), "value", block.timestamp, start, end, duration);
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();
@@ -110,7 +110,7 @@ contract DssLerpTest is DSTest {
         uint256 duration = 365 days;
         uint256 deltaTime = 365 days - 1;   // This will set t at it's max value just under 1 WAD
 
-        Lerp lerp = new Lerp(address(target), "value", start, end, duration);
+        Lerp lerp = new Lerp(address(target), "value", block.timestamp, start, end, duration);
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();
@@ -126,7 +126,7 @@ contract DssLerpTest is DSTest {
         uint256 duration = 2;
         uint256 deltaTime = 1;
 
-        Lerp lerp = new Lerp(address(target), "value", start, end, duration);
+        Lerp lerp = new Lerp(address(target), "value", block.timestamp, start, end, duration);
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();
@@ -148,7 +148,7 @@ contract DssLerpTest is DSTest {
         if (duration == 0) return;
         if (deltaTime == 0) return;
 
-        Lerp lerp = new Lerp(address(target), "value", start, end, duration);
+        Lerp lerp = new Lerp(address(target), "value", block.timestamp, start, end, duration);
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();
@@ -164,7 +164,7 @@ contract DssLerpTest is DSTest {
         uint256 duration = 40;
         uint256 deltaTime = 3;
 
-        BaseLerp lerp = BaseLerp(factory.newLerp(address(target), "value", start, end, duration));
+        BaseLerp lerp = BaseLerp(factory.newLerp(address(target), "value", block.timestamp, start, end, duration));
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();
@@ -180,7 +180,7 @@ contract DssLerpTest is DSTest {
         uint256 duration = 40;
         uint256 deltaTime = 3;
 
-        BaseLerp lerp = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", start, end, duration));
+        BaseLerp lerp = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", block.timestamp, start, end, duration));
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();

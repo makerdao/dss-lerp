@@ -44,7 +44,7 @@ abstract contract BaseLerp {
     bool              public done;
     uint256           public startTime;
 
-    constructor(address target_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) public {
+    constructor(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) public {
         require(duration_ != 0, "Lerp/no-zero-duration");
         require(duration_ <= 365 days, "Lerp/max-duration-one-year");
         // This is not the exact upper bound, but it's a practical one
@@ -56,7 +56,7 @@ abstract contract BaseLerp {
         start = start_;
         end = end_;
         duration = duration_;
-        startTime = block.timestamp;
+        startTime = startTime_;
     }
 
     function tick() external returns (uint256 result) {
@@ -90,7 +90,7 @@ abstract contract BaseLerp {
 
 contract Lerp is BaseLerp {
 
-    constructor(address target_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) public BaseLerp(target_, what_, start_, end_, duration_) {
+    constructor(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) public BaseLerp(target_, what_, startTime_, start_, end_, duration_) {
     }
 
     function update(uint256 value) override internal {
@@ -105,7 +105,7 @@ contract IlkLerp is BaseLerp {
 
     bytes32 immutable public ilk;
 
-    constructor(address target_, bytes32 ilk_, bytes32 what_, uint256 start_, uint256 end_, uint256 duration_) public BaseLerp(target_, what_, start_, end_, duration_) {
+    constructor(address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) public BaseLerp(target_, what_, startTime_, start_, end_, duration_) {
         ilk = ilk_;
     }
 
