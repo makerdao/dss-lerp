@@ -84,7 +84,6 @@ contract DssLerpTest is DSTest {
         lerp.tick();
         assertEq(target.value(), 1 * TOLL_ONE_PCT / 10);    // 0.1%
         assertTrue(lerp.done());
-        lerp.wipe();
         assertEq(target.wards(address(lerp)), 0);
     }
 
@@ -165,6 +164,13 @@ contract DssLerpTest is DSTest {
         uint256 deltaTime = 3;
 
         BaseLerp lerp = BaseLerp(factory.newLerp(address(target), "value", block.timestamp, start, end, duration));
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp));
+        address[1] memory addresses;
+        addresses[0] = address(lerp);
+        address[] memory raddresses = factory.list();
+        assertEq(raddresses[0], addresses[0]);
+        assertEq(raddresses.length, addresses.length);
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
         lerp.tick();
@@ -181,13 +187,25 @@ contract DssLerpTest is DSTest {
         uint256 deltaTime = 3;
 
         BaseLerp lerp = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", block.timestamp, start, end, duration));
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp));
+        address[1] memory addresses;
+        addresses[0] = address(lerp);
+        address[] memory raddresses = factory.list();
+        assertEq(raddresses[0], addresses[0]);
+        assertEq(raddresses.length, addresses.length);
         target.rely(address(lerp));
         hevm.warp(now + deltaTime);
-        lerp.tick();
+        factory.tall();
         uint256 value = target.ilkvalue();
         uint256 low = end > start ? start : end;
         uint256 high = end > start ? end : start;
         assertTrue(value > low && value < high);    // Remove equality to make sure its actually between values
+
+        hevm.warp(now + duration);
+        factory.tall();
+        assertEq(factory.count(), 0);
+        assertTrue(lerp.done());
     }
 
 }

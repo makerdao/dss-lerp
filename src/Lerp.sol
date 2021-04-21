@@ -73,14 +73,10 @@ abstract contract BaseLerp {
             } else {
                 // Set the end value and mark as done
                 update(result = end);
+                try DenyLike(target).deny(address(this)) {} catch {}
                 done = true;
             }
         }
-    }
-
-    function wipe() external {
-        require(done, "Lerp/not-finished");
-        DenyLike(target).deny(address(this));
     }
 
     function update(uint256 value) virtual internal;

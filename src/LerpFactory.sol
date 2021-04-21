@@ -20,11 +20,49 @@ import "./Lerp.sol";
 
 contract LerpFactory {
 
+    address[] public active;  // Array of active lerps in no particular order
+
     function newLerp(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external returns (address) {
-        return address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
+        address lerp = address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
+        active.push(lerp);
+        return lerp;
     }
 
     function newIlkLerp(address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external returns (address) {
-        return address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
+        address lerp = address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
+        active.push(lerp);
+        return lerp;
     }
+
+    function remove(uint256 index) internal {
+        if (index != active.length - 1) {
+            active[index] = active[active.length - 1];
+        }
+        active.pop();
+    }
+
+    // Tick all active lerps or wipe them if they are done
+    function tall() external {
+        for (uint256 i = 0; i < active.length; i++) {
+            BaseLerp lerp = BaseLerp(active[i]);
+            try lerp.tick() {} catch {
+                // Stop tracking if this lerp fails
+                remove(i);
+            }
+            if (lerp.done()) {
+                remove(i);
+            }
+        }
+    }
+
+    // The number of active lerps
+    function count() external view returns (uint256) {
+        return active.length;
+    }
+
+    // Return the entire array of active lerps
+    function list() external view returns (address[] memory) {
+        return active;
+    }
+
 }
