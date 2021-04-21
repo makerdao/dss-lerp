@@ -208,4 +208,33 @@ contract DssLerpTest is DSTest {
         assertTrue(lerp.done());
     }
 
+    function test_factory_multiple_lerps() public {
+        uint256 start = 10;
+        uint256 end = 20;
+
+        BaseLerp lerp1 = BaseLerp(factory.newLerp(address(target), "value", block.timestamp, start, end, 1 days));
+        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", block.timestamp, start, end, 2 days));
+        target.rely(address(lerp1));
+        target.rely(address(lerp2));
+        assertEq(factory.count(), 2);
+
+        hevm.warp(now + 1 days);
+        factory.tall();
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp2));
+        assertTrue(lerp1.done());
+        assertEq(target.value(), 20);
+        assertEq(target.ilkvalue(), 15);
+        assertEq(target.wards(address(lerp1)), 0);
+        assertEq(target.wards(address(lerp2)), 1);
+
+        hevm.warp(now + 1 days);
+        factory.tall();
+        assertEq(factory.count(), 0);
+        assertTrue(lerp2.done());
+        assertEq(target.value(), 20);
+        assertEq(target.ilkvalue(), 20);
+        assertEq(target.wards(address(lerp2)), 0);
+    }
+
 }

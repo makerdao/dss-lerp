@@ -20,25 +20,50 @@ import "./Lerp.sol";
 
 contract LerpFactory {
 
-    address[] public active;  // Array of active lerps in no particular order
-
-    function newLerp(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external returns (address) {
-        address lerp = address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
-        active.push(lerp);
-        return lerp;
+    // --- Auth ---
+    function rely(address guy) external auth { wards[guy] = 1; emit Rely(guy); }
+    function deny(address guy) external auth { wards[guy] = 0; emit Deny(guy); }
+    mapping (address => uint256) public wards;
+    modifier auth {
+        require(wards[msg.sender] == 1, "LerpFactory/not-authorized");
+        _;
     }
 
-    function newIlkLerp(address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external returns (address) {
-        address lerp = address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
+    address[] public active;  // Array of active lerps in no particular order
+
+    event Rely(address indexed usr);
+    event Deny(address indexed usr);
+    event NewLerp(address indexed target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_);
+    event NewIlkLerp(address indexed target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_);
+    event LerpFinished(address indexed lerp);
+
+    constructor() public {
+        wards[msg.sender] = 1;
+        emit Rely(msg.sender);
+    }
+
+    function newLerp(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
+        lerp = address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
         active.push(lerp);
-        return lerp;
+        
+        emit NewLerp(target_, what_, startTime_, start_, end_, duration_);
+    }
+
+    function newIlkLerp(address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
+        lerp = address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
+        active.push(lerp);
+        
+        emit NewIlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_);
     }
 
     function remove(uint256 index) internal {
+        address lerp = active[index];
         if (index != active.length - 1) {
             active[index] = active[active.length - 1];
         }
         active.pop();
+        
+        emit LerpFinished(lerp);
     }
 
     // Tick all active lerps or wipe them if they are done
@@ -48,9 +73,11 @@ contract LerpFactory {
             try lerp.tick() {} catch {
                 // Stop tracking if this lerp fails
                 remove(i);
+                i--;
             }
             if (lerp.done()) {
                 remove(i);
+                i--;
             }
         }
     }
