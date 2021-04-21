@@ -35,11 +35,63 @@ contract TestContract {
 
 }
 
+contract TestContractFileFailure {
+
+    // --- Auth ---
+    mapping (address => uint256) public wards;
+    function rely(address usr) external auth { wards[usr] = 1; }
+    function deny(address usr) external auth { wards[usr] = 0; }
+    modifier auth { require(wards[msg.sender] == 1); _; }
+
+    uint256 public value;
+    uint256 public ilkvalue;
+
+    constructor() public {
+        wards[msg.sender] = 1;
+    }
+
+    function file(bytes32 what, uint256 data) public auth {
+        revert();
+    }
+
+    function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
+        revert();
+    }
+
+}
+
+contract TestContractDenyFailure {
+
+    // --- Auth ---
+    mapping (address => uint256) public wards;
+    function rely(address usr) external auth { wards[usr] = 1; }
+    function deny(address usr) external auth { revert(); }
+    modifier auth { require(wards[msg.sender] == 1); _; }
+
+    uint256 public value;
+    uint256 public ilkvalue;
+
+    constructor() public {
+        wards[msg.sender] = 1;
+    }
+
+    function file(bytes32 what, uint256 data) public auth {
+        value = data;
+    }
+
+    function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
+        ilkvalue = data;
+    }
+
+}
+
 contract DssLerpTest is DSTest {
 
     Hevm hevm;
 
     TestContract target;
+    TestContractFileFailure badFileTarget;
+    TestContractDenyFailure badDenyTarget;
     LerpFactory factory;
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
@@ -52,6 +104,8 @@ contract DssLerpTest is DSTest {
         hevm = Hevm(address(CHEAT_CODE));
 
         target = new TestContract();
+        badFileTarget = new TestContractFileFailure();
+        badDenyTarget = new TestContractDenyFailure();
         factory = new LerpFactory();
     }
 
@@ -235,6 +289,36 @@ contract DssLerpTest is DSTest {
         assertEq(target.value(), 20);
         assertEq(target.ilkvalue(), 20);
         assertEq(target.wards(address(lerp2)), 0);
+    }
+
+    function test_factory_bad_targets() public {
+        uint256 start = 10;
+        uint256 end = 20;
+
+        BaseLerp lerp1 = BaseLerp(factory.newLerp(address(badFileTarget), "value", block.timestamp, start, end, 1 days));
+        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp(address(badDenyTarget), "someIlk", "value", block.timestamp, start, end, 2 days));
+        badFileTarget.rely(address(lerp1));
+        badDenyTarget.rely(address(lerp2));
+        assertEq(factory.count(), 2);
+
+        factory.tall();
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp2));
+        assertTrue(!lerp1.done());
+        assertEq(badFileTarget.value(), 0);
+        assertEq(badDenyTarget.ilkvalue(), 10);
+        assertEq(badFileTarget.wards(address(lerp1)), 1);
+        assertEq(badDenyTarget.wards(address(lerp2)), 1);
+
+        hevm.warp(now + 2 days);
+        factory.tall();
+        assertEq(factory.count(), 0);
+        assertTrue(!lerp1.done());
+        assertTrue(lerp2.done());
+        assertEq(badFileTarget.value(), 0);
+        assertEq(badDenyTarget.ilkvalue(), 20);
+        assertEq(badFileTarget.wards(address(lerp1)), 1);
+        assertEq(badDenyTarget.wards(address(lerp2)), 1);
     }
 
 }
