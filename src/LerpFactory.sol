@@ -29,12 +29,13 @@ contract LerpFactory {
         _;
     }
 
+    mapping (bytes32 => address) public lerps;
     address[] public active;  // Array of active lerps in no particular order
 
     event Rely(address indexed usr);
     event Deny(address indexed usr);
-    event NewLerp(address indexed target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_);
-    event NewIlkLerp(address indexed target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_);
+    event NewLerp(bytes32 name, address indexed target, bytes32 what, uint256 startTime, uint256 start, uint256 end, uint256 duration);
+    event NewIlkLerp(bytes32 name, address indexed target, bytes32 ilk, bytes32 what, uint256 startTime, uint256 start, uint256 end, uint256 duration);
     event LerpFinished(address indexed lerp);
 
     constructor() public {
@@ -42,18 +43,20 @@ contract LerpFactory {
         emit Rely(msg.sender);
     }
 
-    function newLerp(address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
+    function newLerp(bytes32 name_, address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
         lerp = address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
+        lerps[name_] = lerp;
         active.push(lerp);
         
-        emit NewLerp(target_, what_, startTime_, start_, end_, duration_);
+        emit NewLerp(name_, target_, what_, startTime_, start_, end_, duration_);
     }
 
-    function newIlkLerp(address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
+    function newIlkLerp(bytes32 name_, address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
         lerp = address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
+        lerps[name_] = lerp;
         active.push(lerp);
         
-        emit NewIlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_);
+        emit NewIlkLerp(name_, target_, ilk_, what_, startTime_, start_, end_, duration_);
     }
 
     function remove(uint256 index) internal {

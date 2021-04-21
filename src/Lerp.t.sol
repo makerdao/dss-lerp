@@ -217,7 +217,8 @@ contract DssLerpTest is DSTest {
         uint256 duration = 40;
         uint256 deltaTime = 3;
 
-        BaseLerp lerp = BaseLerp(factory.newLerp(address(target), "value", block.timestamp, start, end, duration));
+        BaseLerp lerp = BaseLerp(factory.newLerp("MYLERP", address(target), "value", block.timestamp, start, end, duration));
+        assertEq(factory.lerps("MYLERP"), address(lerp));
         assertEq(factory.count(), 1);
         assertEq(factory.active(0), address(lerp));
         address[1] memory addresses;
@@ -240,7 +241,8 @@ contract DssLerpTest is DSTest {
         uint256 duration = 40;
         uint256 deltaTime = 3;
 
-        BaseLerp lerp = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", block.timestamp, start, end, duration));
+        BaseLerp lerp = BaseLerp(factory.newIlkLerp("MYLERP", address(target), "someIlk", "value", block.timestamp, start, end, duration));
+        assertEq(factory.lerps("MYLERP"), address(lerp));
         assertEq(factory.count(), 1);
         assertEq(factory.active(0), address(lerp));
         address[1] memory addresses;
@@ -260,17 +262,20 @@ contract DssLerpTest is DSTest {
         factory.tall();
         assertEq(factory.count(), 0);
         assertTrue(lerp.done());
+        assertEq(factory.lerps("MYLERP"), address(lerp));
     }
 
     function test_factory_multiple_lerps() public {
         uint256 start = 10;
         uint256 end = 20;
 
-        BaseLerp lerp1 = BaseLerp(factory.newLerp(address(target), "value", block.timestamp, start, end, 1 days));
-        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp(address(target), "someIlk", "value", block.timestamp, start, end, 2 days));
+        BaseLerp lerp1 = BaseLerp(factory.newLerp("MYLERP1", address(target), "value", block.timestamp, start, end, 1 days));
+        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp("MYLERP2", address(target), "someIlk", "value", block.timestamp, start, end, 2 days));
         target.rely(address(lerp1));
         target.rely(address(lerp2));
         assertEq(factory.count(), 2);
+        assertEq(factory.lerps("MYLERP1"), address(lerp1));
+        assertEq(factory.lerps("MYLERP2"), address(lerp2));
 
         hevm.warp(now + 1 days);
         factory.tall();
@@ -295,8 +300,8 @@ contract DssLerpTest is DSTest {
         uint256 start = 10;
         uint256 end = 20;
 
-        BaseLerp lerp1 = BaseLerp(factory.newLerp(address(badFileTarget), "value", block.timestamp, start, end, 1 days));
-        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp(address(badDenyTarget), "someIlk", "value", block.timestamp, start, end, 2 days));
+        BaseLerp lerp1 = BaseLerp(factory.newLerp("MYLERP1", address(badFileTarget), "value", block.timestamp, start, end, 1 days));
+        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp("MYLERP2", address(badDenyTarget), "someIlk", "value", block.timestamp, start, end, 2 days));
         badFileTarget.rely(address(lerp1));
         badDenyTarget.rely(address(lerp2));
         assertEq(factory.count(), 2);
