@@ -6,10 +6,10 @@ Performs linear interpolation over time on any Maker governance parameter. Norma
 
 ```
 // Increase the global debt ceiling from 100M to 200M over 7 days
-lerpFactory.newLerp(vat, "Line", block.timestamp, 100 * MILLION * RAD, 200 * MILLION * RAD, 7 days);
+lerpFactory.newLerp("20210421_VOW_HUMP1", vat, "Line", block.timestamp, 100 * MILLION * RAD, 200 * MILLION * RAD, 7 days);
 
 // Increase the ETH-A debt ceiling from 100M to 200M over 7 days
-lerpFactory.newIlkLerp(vat, "ETH-A", "line", block.timestamp, 100 * MILLION * RAD, 200 * MILLION * RAD, 7 days);
+lerpFactory.newIlkLerp("20210421_VOW_HUMP1", vat, "ETH-A", "line", block.timestamp, 100 * MILLION * RAD, 200 * MILLION * RAD, 7 days);
 ```
 
 # Parameters
