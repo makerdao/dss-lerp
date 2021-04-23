@@ -47,7 +47,7 @@ contract LerpFactory {
         lerp = address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
         lerps[name_] = lerp;
         active.push(lerp);
-        
+
         emit NewLerp(name_, target_, what_, startTime_, start_, end_, duration_);
     }
 
@@ -55,7 +55,7 @@ contract LerpFactory {
         lerp = address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
         lerps[name_] = lerp;
         active.push(lerp);
-        
+
         emit NewIlkLerp(name_, target_, ilk_, what_, startTime_, start_, end_, duration_);
     }
 
@@ -65,7 +65,7 @@ contract LerpFactory {
             active[index] = active[active.length - 1];
         }
         active.pop();
-        
+
         emit LerpFinished(lerp);
     }
 
