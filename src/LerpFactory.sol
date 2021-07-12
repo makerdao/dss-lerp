@@ -44,6 +44,7 @@ contract LerpFactory {
     }
 
     function newLerp(bytes32 name_, address target_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
+        require(lerps[name_] == address(0));
         lerp = address(new Lerp(target_, what_, startTime_, start_, end_, duration_));
         lerps[name_] = lerp;
         active.push(lerp);
@@ -52,6 +53,7 @@ contract LerpFactory {
     }
 
     function newIlkLerp(bytes32 name_, address target_, bytes32 ilk_, bytes32 what_, uint256 startTime_, uint256 start_, uint256 end_, uint256 duration_) external auth returns (address lerp) {
+        require(lerps[name_] == address(0));
         lerp = address(new IlkLerp(target_, ilk_, what_, startTime_, start_, end_, duration_));
         lerps[name_] = lerp;
         active.push(lerp);

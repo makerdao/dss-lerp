@@ -326,7 +326,7 @@ contract DssLerpTest is DSTest {
         assertEq(badDenyTarget.wards(address(lerp2)), 1);
     }
 
-    function test_lerp_duplicates() public {
+    function testFail_lerp_duplicates() public {
         uint256 start = 10 ** 59;
         uint256 end = 20;
         uint256 duration = 40;
@@ -334,51 +334,8 @@ contract DssLerpTest is DSTest {
 
         bytes32 nameTag = "MYLERP";
         BaseLerp lerp1 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
-
-        assertEq(factory.lerps(nameTag), address(lerp1));
-        assertEq(factory.count(), 1);
-
-
-        start = 10 ** 39;
-        end = 10;
-        duration = 40;
-        deltaTime = 3;
+        //                        FAIL HERE
         BaseLerp lerp2 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
-
-        assertEq(factory.lerps(nameTag), address(lerp2));
-        assertEq(factory.count(), 2);
-
-        assertEq(factory.active(0), address(lerp1));
-        assertEq(factory.active(1), address(lerp2));
-
-        address[2] memory addresses;
-        addresses[0] = address(lerp1);
-        addresses[1] = address(lerp2);
-        address[] memory raddresses = factory.list();
-        assertEq(raddresses[0], addresses[0]);
-        assertEq(raddresses[1], addresses[1]);
-        target.rely(address(lerp1));
-        target.rely(address(lerp2));
-        hevm.warp(now + deltaTime);
-
-        factory.tall(); // Both Lerps get called on the same target, but only one lerp is in the mapping.
-
-        assertTrue(!lerp1.done());
-        assertTrue(!lerp2.done()); // Both Lerps are still active, no way to remove the first one from the array
-
-        BaseLerp lerp3 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
-
-        target.deny(address(lerp1));
-        target.rely(address(lerp3));
-
-        factory.tall(); // Three Lerps get called, lerp 1 is replaced with lerp 3
-
-        addresses[0] = address(lerp3);
-        addresses[1] = address(lerp2);
-        raddresses = factory.list();
-        assertEq(raddresses[0], addresses[0]);
-        assertEq(raddresses[1], addresses[1]); // lerp3 is called first, then lerp 1 in tall
-
     }
 
 }
