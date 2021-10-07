@@ -326,4 +326,49 @@ contract DssLerpTest is DSTest {
         assertEq(badDenyTarget.wards(address(lerp2)), 1);
     }
 
+    function test_factory_tick_outside_tall() public {
+        uint256 start = 10;
+        uint256 end = 20;
+
+        BaseLerp lerp1 = BaseLerp(factory.newLerp("MYLERP1", address(target), "value", block.timestamp, start, end, 1 days));
+        target.rely(address(lerp1));
+        assertEq(factory.count(), 1);
+        assertEq(factory.lerps("MYLERP1"), address(lerp1));
+        assertEq(factory.active(0), address(lerp1));
+        assertTrue(!lerp1.done());
+
+        hevm.warp(now + 1 days);
+        lerp1.tick();   // Trigger lerp1 to finish outside of factory.tall() to not remove it
+        assertTrue(lerp1.done());
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp1));
+        assertEq(target.value(), 20);
+        assertEq(target.ilkvalue(), 0);
+        assertEq(target.wards(address(lerp1)), 0);
+
+        BaseLerp lerp2 = BaseLerp(factory.newIlkLerp("MYLERP2", address(target), "someIlk", "value", block.timestamp, start, end, 1 days));
+        target.rely(address(lerp2));
+        assertEq(factory.count(), 2);
+        assertEq(factory.lerps("MYLERP2"), address(lerp2));
+
+        factory.tall();
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp2));
+        assertEq(target.ilkvalue(), 10);
+        assertEq(target.wards(address(lerp2)), 1);
+
+        hevm.warp(now + 1 days);
+
+        lerp2.tick();
+        assertTrue(lerp2.done());
+        assertEq(factory.count(), 1);
+        assertEq(factory.active(0), address(lerp2));
+        assertEq(target.ilkvalue(), 20);
+        assertEq(target.wards(address(lerp2)), 0);
+
+        // Clear out lerp2
+        factory.tall();
+        assertEq(factory.count(), 0);
+    }
+
 }
