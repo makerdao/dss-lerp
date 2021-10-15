@@ -75,12 +75,13 @@ contract LerpFactory {
     function tall() external {
         for (uint256 i = 0; i < active.length; i++) {
             BaseLerp lerp = BaseLerp(active[i]);
-            try lerp.tick() {} catch {
+            try lerp.tick() {
+                if (lerp.done()) {
+                    remove(i);
+                    i--;
+                }
+            } catch {
                 // Stop tracking if this lerp fails
-                remove(i);
-                i--;
-            }
-            if (lerp.done()) {
                 remove(i);
                 i--;
             }
