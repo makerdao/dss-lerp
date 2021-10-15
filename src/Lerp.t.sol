@@ -326,6 +326,18 @@ contract DssLerpTest is DSTest {
         assertEq(badDenyTarget.wards(address(lerp2)), 1);
     }
 
+    function testFail_lerp_duplicates() public {
+        uint256 start = 10 ** 59;
+        uint256 end = 20;
+        uint256 duration = 40;
+        uint256 deltaTime = 3;
+
+        bytes32 nameTag = "MYLERP";
+        BaseLerp lerp1 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
+        //                        FAIL HERE
+        BaseLerp lerp2 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
+    }
+
     function test_factory_tick_outside_tall() public {
         uint256 start = 10;
         uint256 end = 20;
@@ -370,5 +382,4 @@ contract DssLerpTest is DSTest {
         factory.tall();
         assertEq(factory.count(), 0);
     }
-
 }
