@@ -54,12 +54,12 @@ contract TestContractFileFailure {
     }
 
     function file(bytes32 what, uint256 data) public auth {
-        what; data;
+        what; value = data;      // Avoid view modifier
         revert();
     }
 
     function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
-        ilk; what; data;
+        ilk; what; value = data; // Avoid view modifier
         revert();
     }
 
