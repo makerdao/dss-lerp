@@ -26,10 +26,12 @@ contract TestContract {
     }
 
     function file(bytes32 what, uint256 data) public auth {
+        what;
         value = data;
     }
 
     function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
+        ilk; what;
         ilkvalue = data;
     }
 
@@ -51,10 +53,12 @@ contract TestContractFileFailure {
     }
 
     function file(bytes32 what, uint256 data) public auth {
+        what; data;
         revert();
     }
 
     function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
+        ilk; what; data;
         revert();
     }
 
@@ -65,7 +69,7 @@ contract TestContractDenyFailure {
     // --- Auth ---
     mapping (address => uint256) public wards;
     function rely(address usr) external auth { wards[usr] = 1; }
-    function deny(address usr) external auth { revert(); }
+    function deny(address usr) external auth { wards[usr] = 0; revert(); }
     modifier auth { require(wards[msg.sender] == 1); _; }
 
     uint256 public value;
@@ -76,10 +80,12 @@ contract TestContractDenyFailure {
     }
 
     function file(bytes32 what, uint256 data) public auth {
+        what;
         value = data;
     }
 
     function file(bytes32 ilk, bytes32 what, uint256 data) public auth {
+        ilk; what;
         ilkvalue = data;
     }
 
@@ -330,12 +336,12 @@ contract DssLerpTest is DSTest {
         uint256 start = 10 ** 59;
         uint256 end = 20;
         uint256 duration = 40;
-        uint256 deltaTime = 3;
 
         bytes32 nameTag = "MYLERP";
         BaseLerp lerp1 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
         //                        FAIL HERE
         BaseLerp lerp2 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
+        lerp1; lerp2;
     }
 
     function test_factory_tick_outside_tall() public {
