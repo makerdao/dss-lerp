@@ -339,10 +339,9 @@ contract DssLerpTest is DSTest {
         uint256 duration = 40;
 
         bytes32 nameTag = "MYLERP";
-        BaseLerp lerp1 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
+        factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration);
         //                        FAIL HERE
-        BaseLerp lerp2 = BaseLerp(factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration));
-        lerp1; lerp2;
+        factory.newLerp(nameTag, address(target), "value", block.timestamp, start, end, duration);
     }
 
     function test_factory_tick_outside_tall() public {
