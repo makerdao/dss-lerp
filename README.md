@@ -34,8 +34,13 @@ The Lerp contract has one method to call, which is permissionless and can be cal
 
 The Lerp Factory (AKA `LERP_FAB`) provides a singleton inteface to keep track of all active lerp instances. It is deployed at the following addresses:
 
-Mainnet: [0x00B416da876fe42dd02813da435Cc030F0d72434](https://etherscan.io/address/0x00B416da876fe42dd02813da435Cc030F0d72434#code)  
-Kovan: [0xa6766Ed3574bAFc6114618E74035C7bb5e9a6aa9](https://kovan.etherscan.io/address/0xa6766Ed3574bAFc6114618E74035C7bb5e9a6aa9#code)  
+## Latest
+Mainnet:  [0x9175561733d138326fdea86cdfdf53e92b588276](https://etherscan.io/address/0x9175561733d138326fdea86cdfdf53e92b588276#code)
+Goerli:   [0xe7988b75a19d8690272d65882ab0d07d492f7002](https://goerli.etherscan.io/address/0xe7988b75a19d8690272d65882ab0d07d492f7002#code)
+
+## Deprecated
+Mainnet: [0x00B416da876fe42dd02813da435Cc030F0d72434](https://etherscan.io/address/0x00B416da876fe42dd02813da435Cc030F0d72434#code)
+Kovan: [0xa6766Ed3574bAFc6114618E74035C7bb5e9a6aa9](https://kovan.etherscan.io/address/0xa6766Ed3574bAFc6114618E74035C7bb5e9a6aa9#code)
 
 You can get a list of all active lerp instances by calling `list()` which returns an array of addresses for active lerps. This list of active lerps is not in any particular order. Alternatively you can query for specific lerps (even ones that are no longer active) by calling `lerps(bytes32)` which returns the address of the lerp or `address(0)` if there isn't a match. For example, calling `lerps("20210421_VOW_HUMP1")` would return the first lerp from the example above.
 
