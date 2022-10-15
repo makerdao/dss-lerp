@@ -150,6 +150,62 @@ contract DssLerpTest is DSTest {
         assertEq(target.wards(address(lerp)), 0);
     }
 
+    // Confirm lerp can be used as a durational toggle switch for 0 --> 1 values.
+    function test_lerp_zero_to_one() public {
+        uint256 start = 0;
+        uint256 end = 1;
+        uint256 duration = 30 days;
+        uint256 testStart = block.timestamp;
+
+        Lerp lerp = new Lerp(address(target), "value", testStart, start, end, duration);
+        target.rely(address(lerp));
+        lerp.tick();
+        assertEq(target.value(), 0);
+
+        hevm.warp(testStart + duration/2); // Halfway through
+
+        lerp.tick();
+        assertEq(target.value(), 0);
+
+        hevm.warp(testStart + duration - 1); // One block before completion
+
+        lerp.tick();
+        assertEq(target.value(), 0);
+
+        hevm.warp(testStart + duration);  // End of period
+
+        lerp.tick();
+        assertEq(target.value(), 1);
+    }
+
+    // Confirm lerp can be used as a durational toggle switch for 1 --> 0 values.
+    function test_lerp_one_to_zero() public {
+        uint256 start = 1;
+        uint256 end = 0;
+        uint256 duration = 30 days;
+        uint256 testStart = block.timestamp;
+
+        Lerp lerp = new Lerp(address(target), "value", testStart, start, end, duration);
+        target.rely(address(lerp));
+        lerp.tick();
+        assertEq(target.value(), 1);
+
+        hevm.warp(testStart + duration/2); // Halfway through
+
+        lerp.tick();
+        assertEq(target.value(), 1);
+
+        hevm.warp(testStart + duration - 1); // One block before completion
+
+        lerp.tick();
+        assertEq(target.value(), 1);
+
+        hevm.warp(testStart + duration);  // End of period
+
+        lerp.tick();
+        assertEq(target.value(), 0);
+    }
+
     function test_lerp_max_values1() public {
         uint256 start = 10 ** 59;
         uint256 end = 10 ** 59 - 1;
