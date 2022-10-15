@@ -1,5 +1,5 @@
-all     :; DAPP_BUILD_OPTIMIZE=1 DAPP_BUILD_OPTIMIZE_RUNS=200 dapp --use solc:0.6.12 build
-clean   :; dapp clean
+all     :; forge build --use solc:0.6.12 --optimize --optimizer-runs 200
+clean   :; forge clean
 test    :; forge test -vvv
-deploy  :; make && dapp create LerpFactory
-flatten :; hevm flatten --source-file src/LerpFactory.sol > out/LerpFactory.sol && hevm flatten --source-file src/Lerp.sol > out/Lerp.sol
+deploy  :; make && forge create LerpFactory
+flatten :; forge flatten --output out/LerpFactory.flattened.sol src/LerpFactory.sol
