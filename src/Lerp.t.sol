@@ -117,30 +117,32 @@ contract DssLerpTest is DSTest {
     }
 
     function test_lerp() public {
-        Lerp lerp = new Lerp(address(target), "value", block.timestamp, 1 * TOLL_ONE_PCT, 1 * TOLL_ONE_PCT / 10, 9 days);
+        uint256 startTime = block.timestamp;
+        Lerp lerp = new Lerp(address(target), "value", startTime, 1 * TOLL_ONE_PCT, 1 * TOLL_ONE_PCT / 10, 9 days);
+
         assertEq(lerp.what(), "value");
         assertEq(lerp.start(), 1 * TOLL_ONE_PCT);
         assertEq(lerp.end(), 1 * TOLL_ONE_PCT / 10);
         assertEq(lerp.duration(), 9 days);
         assertTrue(!lerp.done());
-        assertEq(lerp.startTime(), 0);
+        assertEq(lerp.startTime(), block.timestamp);
         assertEq(target.value(), 0);
         target.rely(address(lerp));
         lerp.tick();
         assertTrue(!lerp.done());
         assertEq(lerp.startTime(), block.timestamp);
         assertEq(target.value(), 1 * TOLL_ONE_PCT);
-        hevm.warp(1 days);
+        hevm.warp(startTime + 1 days);
         assertEq(target.value(), 1 * TOLL_ONE_PCT);
         lerp.tick();
         assertEq(target.value(), 9 * TOLL_ONE_PCT / 10);    // 0.9%
-        hevm.warp(2 days);
+        hevm.warp(startTime + 2 days);
         lerp.tick();
         assertEq(target.value(), 8 * TOLL_ONE_PCT / 10);    // 0.8%
-        hevm.warp(2 days + 12 hours);
+        hevm.warp(startTime + 2 days + 12 hours);
         lerp.tick();
         assertEq(target.value(), 75 * TOLL_ONE_PCT / 100);    // 0.75%
-        hevm.warp(12 days);
+        hevm.warp(startTime + 12 days);
         assertEq(target.wards(address(lerp)), 1);
         lerp.tick();
         assertEq(target.value(), 1 * TOLL_ONE_PCT / 10);    // 0.1%
